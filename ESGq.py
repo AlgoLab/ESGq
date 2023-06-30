@@ -90,12 +90,12 @@ def run_giraffe(INDEX_PREFIX, FQ1, FQ2, THREADS, GAF):
 
 
 def main(args):
-    try:
-        os.makedirs(args.WD)
-    except FileExistsError:
-        logging.critical("Output folder already exits.")
-        logging.critical("Halting..\n")
-        sys.exit(1)
+    # try:
+    os.makedirs(args.WD, exist_ok=True)
+    # except FileExistsError:
+    #     logging.critical("Output folder already exits.")
+    #     logging.critical("Halting..\n")
+    #     sys.exit(1)
 
     logging.info("Running SUPPA2 to generate events..")
     suppa2_wd = os.path.join(args.WD, "suppa2")
@@ -132,6 +132,7 @@ def main(args):
         if "," in sample:
             fq1_path, fq2_path = sample.split(",")
 
+        # CHECKME: this may not work always
         bn = os.path.basename(fq1_path)
         if bn.endswith("gz"):
             bn = os.path.splitext(os.path.splitext(bn)[0])[0]
