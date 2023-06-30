@@ -25,10 +25,6 @@ for fq in config["fq2"]:
     
 rule run:
     input:
-        # pjoin(WD, "ESGq", "events.dpsi"),
-        # pjoin(WD, "rMATS"),
-        # expand(pjoin(WD, "suppa2.k{k}/"),
-        #        k = Ks),
         pjoin(WD, "summary.csv")
 
 rule STAR_index:
