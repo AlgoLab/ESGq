@@ -16,7 +16,6 @@ def main():
         fulldf["ESGq"].notna() & fulldf["rMATS"].notna() & fulldf["SUPPA2"].notna()
     ]
     for k in fulldf["k"].unique():
-        print(k)
         df = fulldf[fulldf["k"] == k]
         print(k, len(df))
         corr, _ = pearsonr(df["ESGq"], df["rMATS"])
