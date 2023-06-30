@@ -1,4 +1,4 @@
-configfile: "config_fast_se.yaml"
+configfile: "config-se.yaml"
 
 from os.path import join as pjoin
 
