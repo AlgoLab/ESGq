@@ -2,7 +2,6 @@
 
 import sys
 from matplotlib import pyplot as plt
-from matplotlib_venn import venn2, venn3
 import seaborn as sns
 from scipy.stats import pearsonr
 from pathlib import Path
