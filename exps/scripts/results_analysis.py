@@ -449,7 +449,7 @@ def main():
                 else float("NaN")
             )
             epsi = (
-                float(esg_events[etype][k]) if k in esg_events[etype] else float("NaN")
+                1 - float(esg_events[etype][k]) if k in esg_events[etype] else float("NaN")
             )
             print(km, etype, k, rpsi, spsi, epsi, sep=",")
 
