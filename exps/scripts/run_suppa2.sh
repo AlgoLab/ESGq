@@ -20,3 +20,6 @@ h2s=$(echo ${h2[@]} | tr ' ' ',')
 Rscript $wd/split_file.R $outd/all.iso_tpm.txt $h1s $h2s $outd/h1.tpm $outd/h2.tpm
 Rscript $wd/split_file.R $outd/events.psi $h1s $h2s $outd/h1.psi $outd/h2.psi
 suppa.py diffSplice -m empirical -i $ioe -e $outd/h1.tpm $outd/h2.tpm -p $outd/h1.psi $outd/h2.psi -o $outd/DIFF
+if [ -f $outd/DIFF.dpsi.temp.0 ]; then
+    mv $outd/DIFF.dpsi.temp.0 $outd/DIFF.dpsi
+fi
