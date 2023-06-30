@@ -1,14 +1,14 @@
 fa: /data/dmel/ref.chroms.fa
 gtf: /data/dmel/genes.chroms.gtf
 cdna: /data/dmel/transcripts.fa
-wd: /data/dmel/PRJNA718442/SMOUT-SE-l50
+wd: /data/dmel/PRJNA718442/SMOUT-SE-l150
 l: 51
 pv: 0.05
 fq1:
-    - SRR14101759,/data/dmel/PRJNA718442/SRR14101759_l50.fq
-    - SRR14101760,/data/dmel/PRJNA718442/SRR14101760_l50.fq
-    - SRR14101761,/data/dmel/PRJNA718442/SRR14101761_l50.fq
+    - SRR14101759,/data/dmel/PRJNA718442/SRR14101759_l150.fq
+    - SRR14101760,/data/dmel/PRJNA718442/SRR14101760_l150.fq
+    - SRR14101761,/data/dmel/PRJNA718442/SRR14101761_l150.fq
 fq2:
-    - SRR14101762,/data/dmel/PRJNA718442/SRR14101762_l50.fq
-    - SRR14101763,/data/dmel/PRJNA718442/SRR14101763_l50.fq
-    - SRR14101764,/data/dmel/PRJNA718442/SRR14101764_l50.fq
+    - SRR14101762,/data/dmel/PRJNA718442/SRR14101762_l150.fq
+    - SRR14101763,/data/dmel/PRJNA718442/SRR14101763_l150.fq
+    - SRR14101764,/data/dmel/PRJNA718442/SRR14101764_l150.fq
