@@ -55,7 +55,7 @@ def compute_psi(gaf_path, addinfo_path, psi_path):
                 if w1 + w2 + w3 == 0:
                     PSI = -1
                 else:
-                    PSI = 1 - w1 / (w1 + (w2 + w3) / 2)
+                    PSI = w1 / (w1 + (w2 + w3) / 2)
             assert PSI == "NaN" or (PSI >= -1 and PSI <= 1)
             print(last_eidx, w1, w2, w3, PSI, file=opsi)
             isoforms = [[], []]
