@@ -50,5 +50,5 @@ done
 2. Run Snakemake
 ``` sh
 snakemake -c32 --use-conda [-p] [-n]
-# snakemake -c32 --use-conda [-p] [-n] -s Snakefile-se
+snakemake -c32 --use-conda [-p] [-n] -s Snakefile-se
 ```
