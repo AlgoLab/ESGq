@@ -25,12 +25,12 @@ done
 ```
 
 ##### Trim samples
-```sh
+``` sh
 for sraid in SRR14101759 SRR14101760 SRR14101761 SRR14101762 SRR14101763 SRR14101764
 do
     seqtk trimfq -b0 -e50 ${sraid}_l150_1.fq > ${sraid}_l100_1.fq
     seqtk trimfq -b0 -e50 ${sraid}_l150_2.fq > ${sraid}_l100_2.fq
-    seqtk trimfq -b0 -e100 ${sraid}_l150_1.fq > ${sraid}__l50_1.fq
+    seqtk trimfq -b0 -e100 ${sraid}_l150_1.fq > ${sraid}_l50_1.fq
     seqtk trimfq -b0 -e100 ${sraid}_l150_2.fq > ${sraid}_l50_2.fq
 done 
 ```
@@ -39,16 +39,22 @@ done
 ``` sh
 for sraid in SRR14101759 SRR14101760 SRR14101761 SRR14101762 SRR14101763 SRR14101764
 do
-    cat ${sraid}_l50_1.fq ${sraid}_l50_2.fq > ${sraid}_l50.fq
-    cat ${sraid}_l100_1.fq ${sraid}_l100_2.fq > ${sraid}_l100.fq
     cat ${sraid}_l150_1.fq ${sraid}_l150_2.fq > ${sraid}_l150.fq
 done
 ```
 
 ### Run the experiments
-1. Update `config.yaml` (or `config-se.yaml`)
+1. Update `config.yaml` and `config-se.yaml`
 2. Run Snakemake
 ``` sh
-snakemake -c32 --use-conda [-p] [-n]
+# Paired-end
+snakemake -c32 --use-conda [-p] [-n] # update config and run this for each length
+# Single-end
 snakemake -c32 --use-conda [-p] [-n] -s Snakefile-se
+```
+The main results are stored in a `summary.csv` file saved in the working directory `wd`, along with several correlation plots.
+
+To format the results in a simil-latex table, run:
+``` sh
+python3 exps/scripts/build_corr_table.py /path/to/PE-l50-wd/summary.csv /path/to/PE-l100-wd/summary.csv /path/to/PE-l150-wd/summary.csv /path/to/SE-l150-wd/summary.csv
 ```
