@@ -1,0 +1,184 @@
+configfile: "config.yaml"
+
+from os.path import join as pjoin
+
+REF=config["fa"]
+ANNO=config["gtf"]
+CDNA=config["cdna"]
+WD=config["wd"]
+l=config["l"]
+
+Ks = [13,21,31]
+
+FQs = {}
+C1 = {}
+for fq in config["fq1"]:
+    bn, fq1, fq2 = fq.strip("\n").split(",")
+    C1[bn] = f"{fq1},{fq2}"
+    FQs[bn] = (fq1, fq2)
+C2 = {}
+for fq in config["fq2"]:
+    bn, fq1, fq2 = fq.strip("\n").split(",")
+    C2[bn] = f"{fq1},{fq2}"
+    FQs[bn] = (fq1, fq2)
+
+rule run:
+    input:
+        pjoin(WD, "ESGq", "events.dpsi"),
+        pjoin(WD, "rMATS"),
+        expand(pjoin(WD, "suppa2.k{k}/"),
+               k = Ks),
+
+rule STAR_index:
+    input:
+        fa=REF,
+        gtf=ANNO,
+    output:
+        index=directory(pjoin(WD, "STAR-index")),
+    threads: workflow.cores / 2
+    conda: "envs/star.yaml"
+    log: pjoin(WD, "bench", "star-index.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {output.index} --genomeFastaFiles {input.fa} --sjdbGTFfile {input.gtf} --sjdbOverhang 149 --genomeSAindexNbases 12
+        """
+
+rule STAR_map:
+    input:
+        index=pjoin(WD, "STAR-index"),
+        fq1=lambda wildcards: FQs[wildcards.sample][0],
+        fq2=lambda wildcards: FQs[wildcards.sample][1],
+    output:
+        bam=pjoin(WD, "{sample}.STAR/Aligned.sortedByCoord.out.bam"),
+    params:
+        outd=pjoin(WD, "{sample}.STAR/"),
+    threads: workflow.cores / 2
+    conda: "envs/star.yaml"
+    log: pjoin(WD, "bench", "star-map.{sample}.time")
+    shell:
+        """
+        mkdir -p {params.outd}
+        /usr/bin/time -vo {log} STAR --runThreadN {threads} --genomeDir {input.index} --readFilesIn {input.fq1} {input.fq2} --outFileNamePrefix {params.outd} --outSAMtype BAM SortedByCoordinate --outSAMattributes All --limitBAMsortRAM 53687091200
+        samtools index {output.bam}
+        """
+
+rule rmats_c1:
+    input:
+        expand(pjoin(WD, "{sample}.STAR/Aligned.sortedByCoord.out.bam"),
+               sample=C1.keys()),
+    output:
+        pjoin(WD, "c1-bams.txt"),
+    shell:
+        """
+        echo {input} | tr " " "," > {output}
+        """
+
+rule rmats_c2:
+    input:
+        expand(pjoin(WD, "{sample}.STAR/Aligned.sortedByCoord.out.bam"),
+               sample=C2.keys()),
+    output:
+        pjoin(WD, "c2-bams.txt"),
+    shell:
+        """
+        echo {input} | tr " " "," > {output}
+        """
+
+rule rmats:
+    input:
+        gtf=ANNO,
+        c1txt=pjoin(WD, "c1-bams.txt"),
+        c2txt=pjoin(WD, "c2-bams.txt"),
+    output:
+        outd = directory(pjoin(WD, "rMATS")),
+    params:
+        tmpd = pjoin(WD, "rMATS-tmp"),
+    threads: workflow.cores / 2
+    conda: "envs/rmats.yaml"
+    log: pjoin(WD, "bench", "rmats.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} rmats.py --gtf {input.gtf} --b1 {input.c1txt} --b2 {input.c2txt} --od {output.outd} --tmp {params.tmpd} --readLength {l} --nthread {threads} -t paired
+        """
+
+rule salmon_index:
+    input:
+        fa=CDNA,
+    output:
+        index=directory(pjoin(WD, "salmon-index.k{k}")),
+    threads: workflow.cores / 2
+    conda: "envs/salmon.yaml"
+    log: pjoin(WD, "bench", "salmon-index.k{k}.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} salmon index -t {input.fa} -i {output.index} -p {threads} -k{wildcards.k}
+        """
+
+rule salmon_quant:
+    input:
+        index=pjoin(WD, "salmon-index.k{k}"),
+        fq1=lambda wildcards: FQs[wildcards.sample][0],
+        fq2=lambda wildcards: FQs[wildcards.sample][1],
+    output:
+        outd=directory(pjoin(WD, "{sample}.salmon.k{k}/")),
+        sf=pjoin(WD, "{sample}.salmon.k{k}/quant.sf"),
+    threads: workflow.cores / 2
+    conda: "envs/salmon.yaml"
+    log: pjoin(WD, "bench", "salmon-quant.k{k}.{sample}.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} salmon quant -i {input.index} -l IU -1 {input.fq1} -2 {input.fq2} --validateMappings -o {output.outd} -p {threads}
+        """
+
+
+rule suppa2_generateevents:
+    input:
+        gtf=ANNO,
+    output:
+        ioe=pjoin(WD, "suppa2.events.ioe"),
+    params:
+        oprefix=pjoin(WD, "suppa2")
+    threads: 1
+    conda: "envs/suppa2.yaml"
+    log: pjoin(WD, "bench", "suppa2-generateevents.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} suppa.py generateEvents -i {input.gtf} -o {params.oprefix} -e SE SS RI -f ioe
+        awk 'FNR==1 && NR!=1 {{ while (/^seqname/) getline; }} 1 {{print}}' {params.oprefix}*ioe > {output.ioe}
+        """
+
+rule suppa2:
+    input:
+        ioe=pjoin(WD, "suppa2.events.ioe"),
+        quants=expand(pjoin(WD, "{sample}.salmon.k{{k}}/quant.sf"),
+                      sample=FQs.keys()),
+    output:
+        outd=directory(pjoin(WD, "suppa2.k{k}/")),
+    params:
+        quants=pjoin(WD, "*.salmon.k{k}/quant.sf")
+    threads: 1
+    conda: "envs/suppa2.yaml"
+    log: pjoin(WD, "bench", "suppa2.k{k}.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} bash scripts/run_suppa2.sh {input.ioe} "{params.quants}" {output.outd}
+        """
+
+rule esgq:
+    input:
+        fa = REF,
+        gtf = ANNO,
+        fqs = [fq for pair in FQs.values() for fq in pair],
+    output:
+        outd = directory(pjoin(WD, "ESGq")),
+        dpsi = pjoin(WD, "ESGq", "events.dpsi"),
+    params:
+        c1 = " ".join(C1.values()),
+        c2 = " ".join(C2.values()),
+    threads: workflow.cores / 2
+    conda: "envs/esgq.yaml"
+    log: pjoin(WD, "bench", "esgq.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} python3 ../ESGq.py -t {threads} {input.fa} {input.gtf} {output.outd} -1 {params.c1} -2 {params.c2}
+        """
