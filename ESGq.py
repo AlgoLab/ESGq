@@ -168,7 +168,8 @@ def main(args):
             bn = os.path.splitext(os.path.splitext(bn)[0])[0]
         else:
             bn = os.path.splitext(bn)[0]
-        bn = bn[:-2]
+        if fq2_path != None:
+            bn = bn[:-2]
 
         logging.info(f"Aligning {bn}..")
         gaf_path = os.path.join(args.WD, f"{bn}.gaf")
