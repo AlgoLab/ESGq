@@ -26,7 +26,9 @@ for fq in config["fq2"]:
 
 rule run:
     input:
-        pjoin(WD, "summary.csv")
+        doneER = expand(pjoin(WD, "l{l}.k{k}.ESGq-vs-rMATS.png"), l = l, k = Ks),
+        doneES = expand(pjoin(WD, "l{l}.k{k}.ESGq-vs-SUPPA2.png"), l = l, k = Ks),
+        doneRS = expand(pjoin(WD, "l{l}.k{k}.rMATS-vs-SUPPA2.png"), l = l, k = Ks),
 
 
 rule STAR_index:
@@ -91,6 +93,7 @@ rule rmats:
         c2txt=pjoin(WD, "c2-bams.txt"),
     output:
         outd = directory(pjoin(WD, "rMATS")),
+        summary = pjoin(WD, "rMATS", "summary.txt"),
     params:
         tmpd = pjoin(WD, "rMATS-tmp"),
     threads: workflow.cores / 2
@@ -183,19 +186,31 @@ rule esgq:
         /usr/bin/time -vo {log} python3 ../ESGq.py -t {threads} {input.fa} {input.gtf} {output.outd} -1 {params.c1} -2 {params.c2}
         """
 
-rule plots:
+rule merge_data:
     input:
         rmats = pjoin(WD, "rMATS", "summary.txt"),
         suppa2 = expand(pjoin(WD, "suppa2.k{k}/"), k = Ks),
         esgq = pjoin(WD, "ESGq", "events.dpsi"),
-        wd = pjoin(WD),
-    params:
-        pv = PV
     output:
         csv = pjoin(WD, "summary.csv")
+    conda: "envs/plot.yaml"
+    log: pjoin(WD, "bench", "merge.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} python3 scripts/results_analysis.py {WD} {PV} > {output.csv}
+        """
+
+rule plot:
+    input:
+        csv = pjoin(WD, "summary.csv")
+    output:
+        doneER = expand(pjoin(WD, "l{l}.k{k}.ESGq-vs-rMATS.png"), l = l, k = Ks),
+        doneES = expand(pjoin(WD, "l{l}.k{k}.ESGq-vs-SUPPA2.png"), l = l, k = Ks),
+        doneRS = expand(pjoin(WD, "l{l}.k{k}.rMATS-vs-SUPPA2.png"), l = l, k = Ks),
     conda: "envs/plot.yaml"
     log: pjoin(WD, "bench", "plot.time")
     shell:
         """
-        /usr/bin/time -vo {log} python3 scripts/results_analysis.py {input.wd} {params.pv} > {output.csv}
+        /usr/bin/time -vo {log} python3 scripts/plot_corr.py {input.csv} {WD}/l{l}
         """
+
