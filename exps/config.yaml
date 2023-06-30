@@ -3,6 +3,7 @@ gtf: /data/dmel/genes.chroms.gtf
 cdna: /data/dmel/transcripts.fa
 wd: /data/dmel/PRJNA718442/SMOUT-PE-l50
 l: 51
+pv: 0.05
 fq1:
     - SRR14101759,/data/dmel/PRJNA718442/SRR14101759_l50_1.fq,/data/dmel/PRJNA718442/SRR14101759_l50_2.fq
     - SRR14101760,/data/dmel/PRJNA718442/SRR14101760_l50_1.fq,/data/dmel/PRJNA718442/SRR14101760_l50_2.fq
