@@ -7,6 +7,8 @@ ANNO=config["gtf"]
 CDNA=config["cdna"]
 WD=config["wd"]
 l=config["l"]
+PV=config["pv"]
+
 
 Ks = [13,21,31]
 
@@ -24,10 +26,8 @@ for fq in config["fq2"]:
 
 rule run:
     input:
-        pjoin(WD, "ESGq", "events.dpsi"),
-        pjoin(WD, "rMATS"),
-        expand(pjoin(WD, "suppa2.k{k}/"),
-               k = Ks),
+        pjoin(WD, "summary.csv")
+
 
 rule STAR_index:
     input:
@@ -181,4 +181,21 @@ rule esgq:
     shell:
         """
         /usr/bin/time -vo {log} python3 ../ESGq.py -t {threads} {input.fa} {input.gtf} {output.outd} -1 {params.c1} -2 {params.c2}
+        """
+
+rule plots:
+    input:
+        rmats = pjoin(WD, "rMATS", "summary.txt"),
+        suppa2 = expand(pjoin(WD, "suppa2.k{k}/"), k = Ks),
+        esgq = pjoin(WD, "ESGq", "events.dpsi"),
+        wd = pjoin(WD),
+    params:
+        pv = PV
+    output:
+        csv = pjoin(WD, "summary.csv")
+    conda: "envs/plot.yaml"
+    log: pjoin(WD, "bench", "plot.time")
+    shell:
+        """
+        /usr/bin/time -vo {log} python3 scripts/results_analysis.py {input.wd} {params.pv} > {output.csv}
         """
