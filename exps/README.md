@@ -1,4 +1,6 @@
-# experiments
+# Experiments
+
+Instructions and scripts to run ESGq, [rMATS](https://github.com/Xinglab/rmats-turbo), [SUPPA2](https://github.com/comprna/SUPPA) and then compute their correlation.
 
 ### Data
 Reference and annotation from [flybase](https://flybase.org/) (r6.51)
@@ -58,3 +60,10 @@ To format the results in a simil-latex table, run:
 ``` sh
 python3 exps/scripts/build_corr_table.py /path/to/PE-l50-wd/summary.csv /path/to/PE-l100-wd/summary.csv /path/to/PE-l150-wd/summary.csv /path/to/SE-l150-wd/summary.csv
 ```
+
+##### Results
+For user convenience, we provide the results of our analysis (.csv files) in the [results folder](./results):
+- `SMOUT-PE-l150.csv`: paired-end dataset
+- `SMOUT-PE-l100.csv`: paired-end dataset trimmed to 101bp
+- `SMOUT-PE-l50.csv`: paired-end dataset trimmed to 51bp
+- `SMOUT-SE-l150.csv`: single-end dataset

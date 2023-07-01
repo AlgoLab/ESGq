@@ -1,5 +1,10 @@
 # ESGq
 
+ESGq is a graph-based approach for the quantification of Alternative Splicing events across two conditions. It works in three steps:
+1. simple graphs representing AS events (Event Splicing Graphs) are built from input annotation
+2. RNA-Seq reads are aligned to the graphs
+3. graph alignments are analyzed to compute 𝜓 and ∆𝜓 values for each event
+
 ### Installation
 ``` sh
 git clone https://github.com/AlgoLab/esgq.git
@@ -29,3 +34,4 @@ python3 ESGq.py example/ref.fa example/gene.gtf example/OUT-PE -1 example/A_1.fq
 # Single-end sample
 python3 ESGq.py example/ref.fa example/gene.gtf example/OUT-SE -1 example/A_1.fq example/B_1.fq -2 example/C_1.fq example/D_1.fq
 ```
+Results are stored in the `events.dpsi` file saved in the output directory. For each event (first column), it reports the 𝜓 value per each replicate and the ∆𝜓 (last column).
